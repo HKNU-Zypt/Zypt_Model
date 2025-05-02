@@ -1,7 +1,7 @@
 # FSTT_Model
 ## 모델 개요
 
-- **모델 이름**: `facial_emotion_model.h5`
+- **모델 이름**: `facial_emotion_model.tflite`
 - **입력 데이터**: 얼굴 랜드마크 (468개의 (x, y) 좌표 → shape: `(468, 2)`)
 - **입력 형식**: `numpy.ndarray` → shape: `(1, 468, 2)` (batch 포함)
 - **출력 형식**: 소프트맥스 확률 (예: `[0.1, 0.7, 0.2]` 형태)
@@ -128,34 +128,49 @@ def extract_face_landmarks(image_path, normalize=True):
 
 ## 사용예시
 ```python
-import numpy as np
+# TFLite 모델 로드
+interpreter = tf.lite.Interpreter(model_path="concentration_model.tflite")
+interpreter.allocate_tensors()
 
-# 이미지 경로 지정
-image_path = "sample_images/user_photo.jpg"
+# 감정 클래스 라벨 정의
+emotion_labels = {0: "Focused", 1: "Not Focused", 2: "Drowsy"}
 
-# 얼굴 랜드마크 추출
-landmarks = extract_face_landmarks(image_path, normalize=True)
+# 이미지 테스트 함수
+def test_image(image_path):
+    # 얼굴 랜드마크 추출
+    landmarks = extract_face_landmarks(image_path)
+    
+    if landmarks is not None:
+        # 모델에 맞게 데이터 차원 변경
+        landmarks = np.expand_dims(landmarks, axis=0).astype(np.float32)  # (1, 468, 2)로 변경
+        
+        # 입력 텐서에 데이터 넣기
+        input_details = interpreter.get_input_details()
+        input_index = input_details[0]['index']
+        interpreter.set_tensor(input_index, landmarks)
 
-if landmarks is not None:
-    print("✔ 랜드마크 추출 완료!")
-    print("shape:", landmarks.shape)  # 출력: (468, 2)
-    print("예시 좌표:", landmarks[:5])  # 첫 5개 좌표 확인
+        # 추론 실행
+        interpreter.invoke()
 
-    # 배치 차원 추가 (모델 입력용)
-    input_data = np.expand_dims(landmarks, axis=0)  # shape: (1, 468, 2)
+        # 출력 텐서에서 예측값 가져오기
+        output_details = interpreter.get_output_details()
+        output_index = output_details[0]['index']
+        prediction = interpreter.get_tensor(output_index)
 
-    # 모델 예측 (모델은 미리 로드되어 있어야 함)
-    from tensorflow.keras.models import load_model
-    model = load_model("concentration_model.h5")
+        # 예측된 라벨을 감정 라벨로 변환
+        predicted_class = np.argmax(prediction, axis=1)
+        predicted_emotion = emotion_labels[predicted_class[0]]  # 감정 클래스 라벨을 변환
 
-    pred = model.predict(input_data)
-    pred_label = np.argmax(pred)
+        print(f"Predicted emotion: {predicted_emotion}")  # 예측된 감정 출력
 
-    label_map = {0: "focused", 1: "not_focused", 2: "drowsy"}
-    print("예측된 감정:", label_map[pred_label])
+    else:
+        print("No face detected in the image.")
 
-else:
-    print("❌ 얼굴을 인식하지 못했습니다.")
+# 테스트할 이미지 경로
+image_path = "/Users/kimjohyeon/Desktop/Capstone/Sample2.jpg"  # 테스트할 이미지 경로로 변경
+
+# 테스트 이미지로 예측 수행
+test_image(image_path)
 ```
 
 ---
