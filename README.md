@@ -1,6 +1,4 @@
 # FSTT_Model
-# 모델 튜토리얼
-
 ## 모델 개요
 
 - **모델 이름**: `facial_emotion_model.h5`
@@ -15,9 +13,6 @@
     1: not_focused
     2: drowsy
     ```
-    
-
----
 
 ### 필요한 환경(내가 쓴거)
 
@@ -162,5 +157,8 @@ if landmarks is not None:
 else:
     print("❌ 얼굴을 인식하지 못했습니다.")
 ```
+
+---
+
 ## Notion
 https://www.notion.so/1e78c93630e9803d9a57c0a1e2f3c8fe?pvs=4
