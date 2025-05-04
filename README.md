@@ -1,7 +1,6 @@
-# FSTT_Model
 ## 모델 개요
 
-- **모델 이름**: `facial_emotion_model.tflite`
+- **모델 이름**: `concentration_model.tflite`
 - **입력 데이터**: 얼굴 랜드마크 (468개의 (x, y) 좌표 → shape: `(468, 2)`)
 - **입력 형식**: `numpy.ndarray` → shape: `(1, 468, 2)` (batch 포함)
 - **출력 형식**: 소프트맥스 확률 (예: `[0.1, 0.7, 0.2]` 형태)
